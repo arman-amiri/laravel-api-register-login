@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
 			$table->timestamp('email_verified_at')->nullable();
 			$table->bigInteger('code')->nullable();
 			$table->string('password', 100);
-			$table->timestamp('code-create-at')->nullable();
+			$table->timestamp('code_create_at')->nullable();
 			$table->timestamps();
 			$table->softDeletes();
 		});
