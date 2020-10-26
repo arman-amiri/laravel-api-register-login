@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,17 +16,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function(Request $request)
-{
-	return $request->user();
-});
-
 
 Route::prefix('v1')->group(function()
 {
 	Route::prefix('front')->group(function()
 	{
-		Route::post('register', [RegisterController::class , 'register']);
-		Route::post('confirmRegister', [RegisterController::class , 'confirmRegister']);
+		Route::middleware('auth:sanctum')->get('exit', [RegisterController::class, 'exit']);
+		Route::get('user', [RegisterController::class, 'user']);
+		Route::post('register', [RegisterController::class, 'register']);
+		Route::post('confirmRegister', [RegisterController::class, 'confirmRegister']);
 	});
 });

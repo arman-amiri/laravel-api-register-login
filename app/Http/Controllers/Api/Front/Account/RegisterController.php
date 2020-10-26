@@ -9,40 +9,37 @@
 namespace App\Http\Controllers\Api\Front\Account;
 
 
-// use App\Rules\ValidPassword;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Rules\ValidPassword;
 use Carbon\Carbon;
-use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 
 
 class RegisterController extends Controller
 {
-
+	// در صورت ادامه همکاری . استفاده از دیزاین پترن و solid
 
 	public function register(Request $r)
 	{
-	$r->validate([
-		'name'            => 'nullable|max:100|string',
-		'family'          => 'nullable|max:100|string',
-		'email'           => 'required|max:250|email|string|unique:users',
-		'password'        => ['required', 'string', new ValidPassword()],
-		'passwordConfirm' => 'required_with:password|same:password',
-	]);
+		$r->validate([
+			'name'            => 'nullable|max:100|string',
+			'family'          => 'nullable|max:100|string',
+			'email'           => 'required|max:250|email|string|unique:users',
+			'password'        => ['required', 'string', new ValidPassword()],
+			'passwordConfirm' => 'required_with:password|same:password',
+		]);
 		$code = random_int(12121, 98989);
 
-		$user                = new User();
-		$user->name          = $r->input('name');
-		$user->family        = $r->input('family');
-		$user->email         = $r->input('email');
-		$user->password      = Hash::make($r->input('password'));
-		$user->code          = $code;
+		$user                 = new User();
+		$user->name           = $r->input('name');
+		$user->family         = $r->input('family');
+		$user->email          = $r->input('email');
+		$user->password       = Hash::make($r->input('password'));
+		$user->code           = $code;
 		$user->code_create_at = Carbon::now()->addMinutes(30);
 		$user->save();
 
@@ -88,12 +85,14 @@ class RegisterController extends Controller
 			return ['status' => 'false', 'error' => 'تاریخ انقضای کد تمام شده.درخاست ارسال مجدد کد کنید '];
 		}
 
-		$user->verified      = 'Y';
-		$user->verifiedAt    = Carbon::now();
-		$user->code          = null;
-		$user->code_create_at = null;
+		$user->verified          = 'Y';
+		$user->email_verified_at = Carbon::now();
+		$user->code              = null;
+		$user->code_create_at    = null;
 		$user->save();
-		$token = auth()->guard('api')->login($user);
+
+
+		$token = $user->createToken('web')->plainTextToken;
 
 		return [
 			'status' => 'OK',
@@ -102,4 +101,22 @@ class RegisterController extends Controller
 		];
 
 	}
+
+
+
+	public function user(Request $r)
+	{
+		return ['user' => auth('api')->user()];
+	}
+
+
+
+	public function exit()
+	{
+		$user = auth('api')->user();
+		$user->tokens()->where('id', $user->id)->delete();
+
+		return ['status' , 'OK'];
+	}
+
 }
